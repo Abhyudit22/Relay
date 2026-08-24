@@ -181,8 +181,75 @@ The application will be accessible at `http://localhost:3000`.
 
 ---
 
+## 🗄️ Database Schema & Data Models
+
+### 1. `Orders` (Consignments)
+| Field | Type | Description |
+|---|---|---|
+| `id` | `VARCHAR(64) PK` | Unique tracking code (e.g., `ORD-2024-8841`) |
+| `customer_id` | `VARCHAR(64)` | Merchant / User identifier |
+| `order_type` | `ENUM('B2B', 'B2C')` | Segment classification for rate card lookup |
+| `payment_type` | `ENUM('PREPAID', 'COD')` | Payment mode |
+| `status` | `ENUM` | `CREATED`, `ASSIGNED`, `PICKED_UP`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `FAILED`, `RESCHEDULED` |
+| `pickup_address` | `TEXT` | Origin address block with locality & pincode |
+| `delivery_address` | `TEXT` | Destination address block with locality & pincode |
+| `origin_zone` | `VARCHAR(32)` | Auto-detected source hub zone |
+| `destination_zone` | `VARCHAR(32)` | Auto-detected drop hub zone |
+| `actual_weight_kg` | `DECIMAL(8,2)` | Physical package scale weight |
+| `length_cm`, `breadth_cm`, `height_cm` | `DECIMAL(8,2)` | Package dimensions for volumetric calculation |
+| `volumetric_weight_kg` | `DECIMAL(8,2)` | $(L \times B \times H) / 5000$ |
+| `billable_weight_kg` | `DECIMAL(8,2)` | $\max(\text{actual}, \text{volumetric})$ |
+| `charge` | `DECIMAL(10,2)` | Auto-calculated total invoice amount |
+| `delivery_otp` | `VARCHAR(6)` | Secure 4-digit doorstep delivery handshake code |
+| `assigned_agent_id` | `VARCHAR(64) FK` | Assigned courier driver |
+| `created_at`, `updated_at` | `TIMESTAMP` | Record audit timestamps |
+
+### 2. `RateCards` (Dynamic Pricing Rules)
+| Field | Type | Description |
+|---|---|---|
+| `id` | `VARCHAR(64) PK` | Rate card identifier (e.g., `RC-B2B-EXP`, `RC-B2C-STD`) |
+| `service_type` | `ENUM('B2B', 'B2C')` | Segment rule |
+| `base_weight_kg` | `DECIMAL(8,2)` | Minimum chargeable weight threshold |
+| `base_rate` | `DECIMAL(8,2)` | Base price for the initial weight slab |
+| `incremental_rate_per_kg` | `DECIMAL(8,2)` | Pro-rata rate per additional kg above base |
+| `inter_zone_surcharge` | `DECIMAL(8,2)` | Surcharge applied when crossing zone boundaries |
+| `cod_fixed_fee` | `DECIMAL(8,2)` | Minimum fixed COD collection surcharge |
+| `cod_percentage` | `DECIMAL(5,2)` | Percentage of order value for COD processing |
+
+### 3. `DeliveryAgents` (Fleet Telemetry)
+| Field | Type | Description |
+|---|---|---|
+| `id` | `VARCHAR(64) PK` | Courier identifier |
+| `name`, `phone`, `email` | `VARCHAR` | Contact credentials |
+| `vehicle_type` | `ENUM` | `ELECTRIC_SCOOTER`, `BIKE`, `VAN` |
+| `current_zone_id` | `VARCHAR(32)` | Current operational quadrant |
+| `availability_status` | `ENUM` | `AVAILABLE`, `ON_ROUTE`, `OFFLINE` |
+| `active_orders_count` | `INT` | Current active consignment load |
+| `max_capacity_kg` | `DECIMAL(8,2)` | Vehicle physical weight ceiling |
+| `rating` | `DECIMAL(3,2)` | Courier historical SLA score |
+
+### 4. `TrackingHistory` (Immutable Audit Log)
+| Field | Type | Description |
+|---|---|---|
+| `id` | `VARCHAR(64) PK` | Event UUID |
+| `order_id` | `VARCHAR(64) FK` | Associated order identifier |
+| `status` | `VARCHAR(32)` | Milestone status achieved |
+| `actor` | `VARCHAR(64)` | System, Dispatch Admin, Courier ID, or Customer |
+| `timestamp` | `TIMESTAMP` | UTC event timestamp |
+| `notes` | `TEXT` | Status remarks or failure exception details |
+
+---
+
 ## 🔒 Security & Verification
 
 - **OTP Handshake**: Prevents false delivery marking and ensures package receipt by verified recipients.
 - **Server-Authoritative Pricing**: All rate calculations and surcharges are validated on the backend to prevent client-side price tampering.
 - **Granular Role-Based Access**: Strict separation of concerns between Customers, Couriers, Operations Managers, and End Recipients.
+
+---
+
+## 📄 Deliverables Index
+- **Source Code**: Full React 18+ TypeScript SPA with Express/FastAPI architecture.
+- **System Design Document**: [`SYSTEM_DESIGN.md`](./SYSTEM_DESIGN.md) (800 words max covering rate calculation engine, zone detection approach, auto-assignment logic, and failed delivery handling).
+- **Environment Configuration**: [`.env.example`](./.env.example).
+

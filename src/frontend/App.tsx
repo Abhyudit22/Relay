@@ -52,21 +52,9 @@ const AppInner: React.FC = () => {
   );
   const [notifications, setNotifications] = useState<NotificationLog[]>(INITIAL_NOTIFICATIONS);
 
-  // Active Role & Persona
+  // Active Role & Persona (Starts as Guest with no active session until authenticated)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
-  const [currentUser, setCurrentUser] = useState<ActiveUser>({
-    id: 'cust-001',
-    name: 'Priya Sharma',
-    email: 'priya.sharma@example.in',
-    role: 'customer',
-    companyName: 'Sharma Enterprises & Retail',
-    businessType: 'B2B',
-    phone: '+91 98450 11223',
-    address: '742 80ft Road, Koramangala 4th Block',
-    pincode: '560034',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    joinedDate: '2024-03-15',
-  });
+  const [currentUser, setCurrentUser] = useState<ActiveUser | null>(null);
 
   // Auth Modal State
   const [authModal, setAuthModal] = useState<{
@@ -102,6 +90,23 @@ const AppInner: React.FC = () => {
       mode,
       role: role === 'guest' ? 'customer' : role,
     });
+  };
+
+  // Safe Role Selector: Asks for credentials if not logged in as the requested role
+  const handleRoleSelection = (targetRole: UserRole) => {
+    if (targetRole === 'guest') {
+      setCurrentRole('guest');
+      return;
+    }
+
+    // If user is already logged in as this exact role, navigate directly
+    if (currentUser && currentUser.role === targetRole) {
+      setCurrentRole(targetRole);
+      return;
+    }
+
+    // Prompt for credentials for the requested role
+    handleOpenAuth('login', targetRole);
   };
 
   const handleAuthSuccess = (user: ActiveUser, role: UserRole) => {
@@ -141,6 +146,7 @@ const AppInner: React.FC = () => {
   };
 
   const handleLogout = () => {
+    setCurrentUser(null);
     setCurrentRole('guest');
     addToast({
       type: 'info',
@@ -379,7 +385,7 @@ const AppInner: React.FC = () => {
       <Header
         currentRole={currentRole}
         currentUser={currentUser}
-        onRoleChange={(role) => setCurrentRole(role)}
+        onRoleChange={handleRoleSelection}
         notifications={notifications}
         isWsConnected={true}
         onOpenAuth={handleOpenAuth}
@@ -397,7 +403,17 @@ const AppInner: React.FC = () => {
 
         {currentRole === 'customer' && (
           <RecipientPortal
-            currentUser={currentUser}
+            currentUser={
+              currentUser || {
+                id: 'cust-recipient-01',
+                name: 'Rohan Mehta',
+                email: 'rohan.mehta@example.in',
+                role: 'customer',
+                phone: '+91 98450 44332',
+                address: 'Apt 4B, 742 80ft Road, Koramangala',
+                pincode: '560034',
+              }
+            }
             orders={orders}
             zones={zones}
             onOpenRescheduleModal={(ord) => setSelectedRescheduleOrder(ord)}
@@ -407,7 +423,19 @@ const AppInner: React.FC = () => {
 
         {currentRole === 'merchant' && (
           <CustomerPortal
-            currentUser={currentUser}
+            currentUser={
+              currentUser || {
+                id: 'cust-001',
+                name: 'Priya Sharma',
+                email: 'priya.sharma@example.in',
+                role: 'merchant',
+                phone: '+91 98450 11223',
+                companyName: 'Sharma Enterprises & Retail',
+                businessType: 'B2B',
+                address: '402 Innovation Blvd, Indiranagar',
+                pincode: '560038',
+              }
+            }
             orders={orders}
             zones={zones}
             zoneAreas={zoneAreas}

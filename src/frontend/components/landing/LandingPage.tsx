@@ -61,16 +61,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth }) => {
           <div className="space-y-2.5">
             <button
               type="button"
+              onClick={() => onOpenAuth?.('login', 'merchant')}
+              className="w-full p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3 text-left">
+                <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-950/80 text-orange-600 dark:text-orange-400">
+                  <Package size={18} />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Merchant Shipper</div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">Book consignments & thermal AWB</div>
+                </div>
+              </div>
+              <ArrowRight size={15} className="text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+            </button>
+
+            <button
+              type="button"
               onClick={() => onOpenAuth?.('login', 'customer')}
               className="w-full p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 transition-all flex items-center justify-between group"
             >
               <div className="flex items-center gap-3 text-left">
-                <div className="p-2 rounded-xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400">
-                  <Package size={18} />
+                <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
+                  <Navigation size={18} />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Customer Portal</div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">Book and track shipments</div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Package Recipient</div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">Live ETA, Doorstep OTP & Reschedule</div>
                 </div>
               </div>
               <ArrowRight size={15} className="text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
@@ -88,23 +105,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuth }) => {
                 <div>
                   <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Delivery Courier</div>
                   <div className="text-[11px] text-zinc-500 dark:text-zinc-400">Manage route runs & OTPs</div>
-                </div>
-              </div>
-              <ArrowRight size={15} className="text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onOpenAuth?.('login', 'recipient')}
-              className="w-full p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3 text-left">
-                <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
-                  <Navigation size={18} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Package Recipient</div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">Live ETA & Reschedule</div>
                 </div>
               </div>
               <ArrowRight size={15} className="text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />

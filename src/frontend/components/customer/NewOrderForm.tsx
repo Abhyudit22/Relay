@@ -314,188 +314,188 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
           </div>
 
           {/* Sender / Pickup Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <MapPin size={14} className="text-blue-600" />
+              <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
                 2. Pickup Origin Details
               </h4>
-              <span className="text-[11px] font-mono font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              <span className="text-[11px] font-mono font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
                 {calcResult.pickupZone.name}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Sender / Warehouse Name</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Sender / Warehouse Name</label>
                 <input
                   type="text"
                   required
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Sender Contact Phone</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Sender Contact Phone</label>
                 <input
                   type="tel"
                   required
                   value={senderPhone}
                   onChange={(e) => setSenderPhone(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
-                <label className="text-[11px] text-slate-500 block mb-1">Pickup Street Address</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Pickup Street Address</label>
                 <input
                   type="text"
                   required
                   value={senderAddress}
                   onChange={(e) => setSenderAddress(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Origin Pincode</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Origin Pincode</label>
                 <input
                   type="text"
                   required
                   value={senderPincode}
                   onChange={(e) => setSenderPincode(e.target.value)}
                   placeholder="560001"
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Recipient / Delivery Drop Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <MapPin size={14} className="text-emerald-600" />
+              <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                <MapPin size={14} className="text-emerald-600 dark:text-emerald-400" />
                 3. Recipient Drop-Off Details
               </h4>
-              <span className="text-[11px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="text-[11px] font-mono font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                 {calcResult.dropZone.name}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Recipient Full Name</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Recipient Full Name</label>
                 <input
                   type="text"
                   required
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Recipient Mobile Phone</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Recipient Mobile Phone</label>
                 <input
                   type="tel"
                   required
                   value={recipientPhone}
                   onChange={(e) => setRecipientPhone(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
-                <label className="text-[11px] text-slate-500 block mb-1">Destination Address</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Destination Address</label>
                 <input
                   type="text"
                   required
                   value={recipientAddress}
                   onChange={(e) => setRecipientAddress(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Drop Pincode</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Drop Pincode</label>
                 <input
                   type="text"
                   required
                   value={recipientPincode}
                   onChange={(e) => setRecipientPincode(e.target.value)}
                   placeholder="560034"
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Package Dimensions Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <Box size={14} className="text-blue-600" />
+          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-2xs space-y-4">
+            <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+              <Box size={14} className="text-amber-500" />
               4. Package Dimensions & Weight
             </h4>
 
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">Item Title / Description</label>
+              <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Item Title / Description</label>
               <input
                 type="text"
                 required
                 value={itemDescription}
                 onChange={(e) => setItemDescription(e.target.value)}
-                className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-3 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Length (cm)</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Length (cm)</label>
                 <input
                   type="number"
                   min="1"
                   step="0.5"
                   value={lengthCm}
                   onChange={(e) => setLengthCm(Math.max(1, Number(e.target.value)))}
-                  className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Breadth (cm)</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Breadth (cm)</label>
                 <input
                   type="number"
                   min="1"
                   step="0.5"
                   value={breadthCm}
                   onChange={(e) => setBreadthCm(Math.max(1, Number(e.target.value)))}
-                  className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Height (cm)</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Height (cm)</label>
                 <input
                   type="number"
                   min="1"
                   step="0.5"
                   value={heightCm}
                   onChange={(e) => setHeightCm(Math.max(1, Number(e.target.value)))}
-                  className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg text-xs font-mono text-center focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-500 block mb-1">Actual (kg)</label>
+                <label className="text-[11px] text-zinc-600 dark:text-zinc-400 block mb-1">Actual (kg)</label>
                 <input
                   type="number"
                   min="0.1"
                   step="0.1"
                   value={actualWeightKg}
                   onChange={(e) => setActualWeightKg(Math.max(0.1, Number(e.target.value)))}
-                  className="w-full px-2 py-1.5 border border-blue-300 rounded-lg text-xs font-mono font-bold text-blue-700 text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-stone-50 dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300 rounded-lg text-xs font-mono font-bold text-center focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -504,29 +504,29 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
 
         {/* Right 5 Columns: Live Sticky Rate Card */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="sticky top-6 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 shadow-md space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
+          <div className="sticky top-20 bg-zinc-950 text-white rounded-3xl p-5 sm:p-6 border border-zinc-800 shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
                 Live Pricing Breakdown
               </span>
-              <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-mono border border-emerald-500/30">
+              <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-mono border border-emerald-500/30">
                 ● {calcResult.charges.zoneRelation} ZONE
               </span>
             </div>
 
             {/* Weight Metric Comparison */}
-            <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-400 text-[11px]">
+            <div className="p-3.5 bg-zinc-900/90 rounded-2xl border border-zinc-800 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-400 text-[11px]">
                 <span>Actual: {calcResult.dimensions.actualWeightKg} kg</span>
                 <span>Volumetric: {calcResult.dimensions.volumetricWeightKg} kg</span>
               </div>
               <div className="flex items-center justify-between font-semibold">
-                <span className="text-slate-300 flex items-center gap-1">
-                  <Scale size={13} className="text-blue-400" /> Billable Weight
+                <span className="text-zinc-300 flex items-center gap-1.5">
+                  <Scale size={14} className="text-amber-400" /> Billable Weight
                 </span>
-                <span className="font-mono text-white text-sm">
+                <span className="font-mono text-white text-sm font-bold">
                   {calcResult.charges.billableWeightKg} kg{' '}
-                  <span className="text-[10px] text-blue-400 font-normal">
+                  <span className="text-[10px] text-amber-400 font-normal">
                     ({calcResult.charges.weightBasis})
                   </span>
                 </span>
@@ -534,7 +534,7 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
             </div>
 
             {/* Line Items */}
-            <div className="space-y-2 text-xs text-slate-300">
+            <div className="space-y-2.5 text-xs text-zinc-300">
               <div className="flex justify-between">
                 <span>Base Rate ({calcResult.rateCard?.baseWeightKg ?? 1}kg slab)</span>
                 <span className="font-mono text-white">
@@ -553,17 +553,17 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
                   <span className="font-mono">+₹{(calcResult.charges?.codSurcharge ?? 0).toFixed(2)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-zinc-400">
                 <span>Handling & Protection Fee</span>
                 <span className="font-mono">₹{(calcResult.charges?.handlingFee ?? 0).toFixed(2)}</span>
               </div>
             </div>
 
             {/* Total Charge */}
-            <div className="pt-4 border-t border-slate-800">
-              <div className="flex items-baseline justify-between mb-3">
-                <span className="text-xs uppercase font-mono text-slate-400">Total Payable</span>
-                <span className="text-3xl font-extrabold font-mono text-white">
+            <div className="pt-4 border-t border-zinc-800">
+              <div className="flex items-baseline justify-between mb-4">
+                <span className="text-xs uppercase font-mono text-zinc-400">Total Payable</span>
+                <span className="text-3xl font-black font-mono text-amber-400">
                   ₹{(calcResult.charges?.totalCharge ?? 0).toFixed(2)}
                 </span>
               </div>
@@ -571,15 +571,15 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>Generating Consignment...</span>
                 ) : (
                   <>
-                    <Truck size={15} />
+                    <Truck size={16} />
                     <span>Confirm & Book Shipment</span>
-                    <ArrowRight size={14} />
+                    <ArrowRight size={15} />
                   </>
                 )}
               </button>
@@ -588,7 +588,7 @@ export const NewOrderForm: React.FC<NewOrderFormProps> = ({
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="w-full mt-2 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+                  className="w-full mt-2 py-2 text-xs text-zinc-400 hover:text-white transition-colors"
                 >
                   Cancel & Go Back
                 </button>

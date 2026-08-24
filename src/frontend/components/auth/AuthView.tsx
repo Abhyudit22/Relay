@@ -42,9 +42,13 @@ export const AuthView: React.FC<AuthViewProps> = ({
   isModal = false,
 }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [selectedRole, setSelectedRole] = useState<UserRole>(
-    initialRole === 'guest' ? 'customer' : initialRole
-  );
+  // Default to initialRole if valid role, otherwise customer
+  const effectiveRole: 'customer' | 'merchant' | 'agent' | 'admin' =
+    initialRole === 'merchant' || initialRole === 'agent' || initialRole === 'admin'
+      ? initialRole
+      : 'customer';
+
+  const [selectedRole, setSelectedRole] = useState<'customer' | 'merchant' | 'agent' | 'admin'>(effectiveRole);
 
   // Common Form States
   const [email, setEmail] = useState('');
@@ -82,6 +86,57 @@ export const AuthView: React.FC<AuthViewProps> = ({
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
+  // Role metadata lookup for custom tailored headings & badges
+  const roleConfig = {
+    customer: {
+      name: 'Customer & Recipient',
+      subtitle: 'Track your deliveries, provide OTP verification, and manage delivery slots',
+      icon: User,
+      badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
+      demoEmail: 'rohan.mehta@example.in',
+      demoPhone: '+91 98450 44332',
+      demoPass: 'recipient@123',
+      demoName: 'Rohan Mehta',
+      accentColor: 'text-blue-600',
+    },
+    merchant: {
+      name: 'Merchant & Shipper',
+      subtitle: 'Book consignments, generate AWB shipping labels, and track shipments in bulk',
+      icon: Building2,
+      badgeColor: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300',
+      demoEmail: 'priya.sharma@example.in',
+      demoPhone: '+91 98450 11223',
+      demoPass: 'merchant@123',
+      demoName: 'Priya Sharma',
+      accentColor: 'text-orange-600',
+    },
+    agent: {
+      name: 'Courier Partner',
+      subtitle: 'Manage assigned delivery runs, update task states, and verify OTPs on the road',
+      icon: Truck,
+      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300',
+      demoEmail: 'rahul.s@lastmile-fleet.internal',
+      demoPhone: '+91 98110 55443',
+      demoPass: 'courier@123',
+      demoName: 'Rahul Sharma',
+      accentColor: 'text-emerald-600',
+    },
+    admin: {
+      name: 'Dispatch HQ Command',
+      subtitle: 'Central dispatch operations, auto-clustering, fleet telemetry, and rate card rules',
+      icon: Shield,
+      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-300',
+      demoEmail: 'vikram.singh@lastmile.in',
+      demoPhone: '+91 98100 99887',
+      demoPass: 'admin@123',
+      demoName: 'Vikramaditya Singh',
+      accentColor: 'text-purple-600',
+    },
+  };
+
+  const currentRoleConfig = roleConfig[selectedRole];
+  const RoleIcon = currentRoleConfig.icon;
+
   // Password strength calculation
   const getPasswordStrength = (pass: string) => {
     if (!pass) return 0;
@@ -95,69 +150,40 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
   const passwordScore = getPasswordStrength(password);
 
-  // 1-Click Quick Demo Sign-In Handlers
+  // 1-Click Demo Credentials Autofill Handlers
   const handleQuickDemoSignIn = (roleType: 'customer' | 'merchant' | 'agent' | 'admin') => {
-    setIsLoading(true);
+    setSelectedRole(roleType);
+    setMode('login');
     setErrorMessage(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      if (roleType === 'customer') {
-        const demoUser: ActiveUser = {
-          id: 'cust-recipient-01',
-          name: 'Rohan Mehta',
-          email: 'rohan.mehta@example.in',
-          role: 'customer',
-          phone: '+91 98450 44332',
-          address: 'Apt 4B, 742 80ft Road, Koramangala 4th Block',
-          pincode: '560034',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          joinedDate: '2024-05-10',
-        };
-        onAuthSuccess(demoUser, 'customer');
-      } else if (roleType === 'merchant') {
-        const demoUser: ActiveUser = {
-          id: 'cust-001',
-          name: 'Priya Sharma',
-          email: 'priya.sharma@example.in',
-          role: 'merchant',
-          phone: '+91 98450 11223',
-          companyName: 'Sharma Enterprises & Retail',
-          businessType: 'B2B',
-          address: '402 Innovation Blvd, Indiranagar',
-          pincode: '560038',
-          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-          joinedDate: '2024-03-15',
-        };
-        onAuthSuccess(demoUser, 'merchant');
-      } else if (roleType === 'agent') {
-        const demoUser: ActiveUser = {
-          id: 'agt-042',
-          name: 'Rahul Sharma',
-          email: 'rahul.s@lastmile-fleet.internal',
-          role: 'agent',
-          agentId: 'agt-042',
-          phone: '+91 98110 55443',
-          vehicleType: 'ELECTRIC_SCOOTER',
-          zoneId: 'zone-a',
-          avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
-          joinedDate: '2023-11-10',
-        };
-        onAuthSuccess(demoUser, 'agent');
-      } else {
-        const demoUser: ActiveUser = {
-          id: 'admin-master',
-          name: 'Vikramaditya Singh',
-          email: 'vikram.singh@lastmile.in',
-          role: 'admin',
-          phone: '+91 98100 99887',
-          companyName: 'RELAY Logistics Command',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-          joinedDate: '2023-01-01',
-        };
-        onAuthSuccess(demoUser, 'admin');
-      }
-    }, 400);
+    if (roleType === 'customer') {
+      setEmail('rohan.mehta@example.in');
+      setPhone('+91 98450 44332');
+      setPassword('recipient@123');
+      setFullName('Rohan Mehta');
+      setUseOtpLogin(false);
+    } else if (roleType === 'merchant') {
+      setEmail('priya.sharma@example.in');
+      setPhone('+91 98450 11223');
+      setPassword('merchant@123');
+      setFullName('Priya Sharma');
+      setCompanyName('Sharma Enterprises & Retail');
+      setCustomerType('B2B');
+      setUseOtpLogin(false);
+    } else if (roleType === 'agent') {
+      setEmail('rahul.s@lastmile-fleet.internal');
+      setPhone('+91 98110 55443');
+      setPassword('courier@123');
+      setFullName('Rahul Sharma');
+      setUseOtpLogin(false);
+    } else {
+      setEmail('vikram.singh@lastmile.in');
+      setPhone('+91 98100 99887');
+      setPassword('admin@123');
+      setAdminPasskey('ADMIN-9900');
+      setFullName('Vikramaditya Singh');
+      setUseOtpLogin(false);
+    }
   };
 
   // Form Submit Handler
@@ -332,13 +358,20 @@ export const AuthView: React.FC<AuthViewProps> = ({
             {/* Modal Header Bar */}
             <div className="flex items-center justify-between pb-4 mb-2">
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${currentRoleConfig.badgeColor}`}>
+                    <RoleIcon size={13} />
+                    {currentRoleConfig.name}
+                  </span>
+                  <span className="text-[11px] font-mono text-zinc-400">
+                    {mode === 'login' ? 'Authentication' : 'Registration'}
+                  </span>
+                </div>
                 <h2 className="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
-                  {mode === 'login' ? 'Welcome Back to Relay' : 'Create Your Relay Account'}
+                  {mode === 'login' ? `${currentRoleConfig.name} Sign In` : `Join Relay as ${currentRoleConfig.name}`}
                 </h2>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  {mode === 'login'
-                    ? 'Sign in to access your consignments, routes, or dispatch console.'
-                    : 'Get instant access to real-time dispatching and parcel delivery.'}
+                <p className="text-xs text-zinc-500 mt-0.5 max-w-md">
+                  {currentRoleConfig.subtitle}
                 </p>
               </div>
 
@@ -353,21 +386,21 @@ export const AuthView: React.FC<AuthViewProps> = ({
               )}
             </div>
 
-            {/* Mode Switcher Tabs (Log In vs Sign Up) */}
-            <div className="flex bg-stone-100 p-1 rounded-xl mb-5">
+            {/* Mode Switcher Tabs (Log In vs Sign Up for THIS role) */}
+            <div className="flex bg-stone-100 p-1 rounded-xl mb-4">
               <button
                 type="button"
                 onClick={() => {
                   setMode('login');
                   setErrorMessage(null);
                 }}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center ${
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
                   mode === 'login'
                     ? 'bg-white text-zinc-900 shadow-xs'
                     : 'text-zinc-600 hover:text-zinc-900'
                 }`}
               >
-                Sign In
+                <span>Sign In to {selectedRole === 'customer' ? 'Recipient Account' : selectedRole === 'merchant' ? 'Merchant Portal' : selectedRole === 'agent' ? 'Courier App' : 'Dispatch HQ'}</span>
               </button>
               <button
                 type="button"
@@ -375,94 +408,61 @@ export const AuthView: React.FC<AuthViewProps> = ({
                   setMode('signup');
                   setErrorMessage(null);
                 }}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center ${
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
                   mode === 'signup'
                     ? 'bg-white text-zinc-900 shadow-xs'
                     : 'text-zinc-600 hover:text-zinc-900'
                 }`}
               >
-                Create Account
+                <span>Register as {selectedRole === 'customer' ? 'Customer' : selectedRole === 'merchant' ? 'Merchant' : selectedRole === 'agent' ? 'Courier' : 'Admin'}</span>
               </button>
             </div>
 
-            {/* Quick 1-Click Persona Fast Logins */}
-            <div className="mb-5 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider font-mono flex items-center gap-1.5">
+            {/* Quick 1-Click Persona Fast Login / Autofill for Selected Role */}
+            <div className="mb-4 p-3 bg-stone-50 rounded-xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div>
+                <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono flex items-center gap-1.5">
                   <Zap size={13} className="text-amber-500 fill-amber-500" />
-                  Quick Demo Access:
+                  Auto-Fill {currentRoleConfig.name} Demo Credentials:
                 </span>
-                <span className="text-[10px] text-zinc-400 font-mono">1-click test login</span>
+                <span className="text-[11px] text-zinc-500 font-mono block mt-0.5">
+                  {currentRoleConfig.demoEmail} • {currentRoleConfig.demoPass}
+                </span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoSignIn('customer')}
-                  className="px-2.5 py-2 bg-white hover:bg-amber-50 hover:border-amber-300 border border-stone-200 rounded-lg text-left transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-amber-700 font-bold text-xs">
-                    <User size={13} />
-                    <span className="truncate">Customer</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 block truncate mt-0.5">Rohan (Recipient)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoSignIn('merchant')}
-                  className="px-2.5 py-2 bg-white hover:bg-orange-50 hover:border-orange-300 border border-stone-200 rounded-lg text-left transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-orange-700 font-bold text-xs">
-                    <Building2 size={13} />
-                    <span className="truncate">Merchant</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 block truncate mt-0.5">Priya (Shipper)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoSignIn('agent')}
-                  className="px-2.5 py-2 bg-white hover:bg-emerald-50 hover:border-emerald-300 border border-stone-200 rounded-lg text-left transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
-                    <Truck size={13} />
-                    <span className="truncate">Courier</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 block truncate mt-0.5">Rahul (Rider)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoSignIn('admin')}
-                  className="px-2.5 py-2 bg-white hover:bg-purple-50 hover:border-purple-300 border border-stone-200 rounded-lg text-left transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-1.5 text-purple-700 font-bold text-xs">
-                    <Shield size={13} />
-                    <span className="truncate">Admin Ops</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 block truncate mt-0.5">Vikram (Command)</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => handleQuickDemoSignIn(selectedRole)}
+                className="px-3 py-1.5 bg-white hover:bg-amber-50 hover:border-amber-300 border border-stone-200 rounded-lg text-xs font-bold text-zinc-800 transition-all shadow-2xs shrink-0 flex items-center justify-center gap-1.5"
+              >
+                <Zap size={13} className="text-amber-500" />
+                <span>Fill {selectedRole.toUpperCase()} Credentials</span>
+              </button>
             </div>
 
-            {/* Role / Persona Target Selector */}
+            {/* Role Switcher Drawer / Pills (Allow changing target role if needed) */}
             <div className="mb-4">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 mb-1.5">
-                Select Operating Role
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-600">
+                  Target Portal
+                </label>
+                <span className="text-[10px] text-zinc-400">Switch role if needed:</span>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
-                  onClick={() => setSelectedRole('customer')}
+                  onClick={() => {
+                    setSelectedRole('customer');
+                    setErrorMessage(null);
+                  }}
                   className={`p-2.5 rounded-xl border text-left transition-all flex flex-col gap-1 ${
                     selectedRole === 'customer'
-                      ? 'border-amber-500 bg-amber-50/70 text-amber-950 ring-2 ring-amber-500/20 font-bold'
+                      ? 'border-blue-500 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/20 font-bold'
                       : 'border-stone-200 bg-white text-zinc-700 hover:bg-stone-50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <User size={15} className={selectedRole === 'customer' ? 'text-amber-600' : 'text-zinc-400'} />
-                    {selectedRole === 'customer' && <CheckCircle2 size={13} className="text-amber-600" />}
+                    <User size={15} className={selectedRole === 'customer' ? 'text-blue-600' : 'text-zinc-400'} />
+                    {selectedRole === 'customer' && <CheckCircle2 size={13} className="text-blue-600" />}
                   </div>
                   <span className="text-xs font-bold leading-none mt-1">Customer</span>
                   <span className="text-[10px] text-zinc-500">Receive & OTP</span>
@@ -470,7 +470,10 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setSelectedRole('merchant')}
+                  onClick={() => {
+                    setSelectedRole('merchant');
+                    setErrorMessage(null);
+                  }}
                   className={`p-2.5 rounded-xl border text-left transition-all flex flex-col gap-1 ${
                     selectedRole === 'merchant'
                       ? 'border-orange-500 bg-orange-50/70 text-orange-950 ring-2 ring-orange-500/20 font-bold'
@@ -487,7 +490,10 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setSelectedRole('agent')}
+                  onClick={() => {
+                    setSelectedRole('agent');
+                    setErrorMessage(null);
+                  }}
                   className={`p-2.5 rounded-xl border text-left transition-all flex flex-col gap-1 ${
                     selectedRole === 'agent'
                       ? 'border-emerald-500 bg-emerald-50/70 text-emerald-950 ring-2 ring-emerald-500/20 font-bold'
@@ -504,7 +510,10 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setSelectedRole('admin')}
+                  onClick={() => {
+                    setSelectedRole('admin');
+                    setErrorMessage(null);
+                  }}
                   className={`p-2.5 rounded-xl border text-left transition-all flex flex-col gap-1 ${
                     selectedRole === 'admin'
                       ? 'border-purple-500 bg-purple-50/70 text-purple-950 ring-2 ring-purple-500/20 font-bold'

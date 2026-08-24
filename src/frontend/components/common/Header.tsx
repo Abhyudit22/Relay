@@ -12,11 +12,16 @@ import {
   Sun,
   Moon,
   Globe,
+  User,
+  Store,
+  ShieldCheck,
+  Home,
+  Check,
 } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: UserRole;
-  currentUser: ActiveUser;
+  currentUser: ActiveUser | null;
   onRoleChange: (role: UserRole) => void;
   notifications?: NotificationLog[];
   isWsConnected?: boolean;
@@ -36,24 +41,33 @@ export const Header: React.FC<HeaderProps> = ({
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileRoleMenu, setShowMobileRoleMenu] = useState(false);
+
+  const roleOptions: { role: UserRole; label: string; icon: any; color: string }[] = [
+    { role: 'guest', label: 'Home', icon: Home, color: 'bg-zinc-700' },
+    { role: 'customer', label: 'Recipient', icon: User, color: 'bg-blue-600' },
+    { role: 'merchant', label: 'Merchant', icon: Store, color: 'bg-amber-600' },
+    { role: 'agent', label: 'Courier', icon: Truck, color: 'bg-emerald-600' },
+    { role: 'admin', label: 'Admin HQ', icon: ShieldCheck, color: 'bg-red-600' },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-800/80 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        {/* Brand & Phase Indicator */}
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 bg-zinc-950/85 backdrop-blur-lg border-b border-zinc-800/80 text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-3">
+        {/* Brand & Home Navigation */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => onRoleChange('guest')}
             className="flex items-center gap-2.5 cursor-pointer group text-left"
           >
-            <div className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform font-bold">
-              <Truck size={19} className="stroke-[2.5]" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform font-bold">
+              <Truck size={18} className="stroke-[2.5]" />
             </div>
             <div>
-              <span className="font-extrabold text-lg tracking-tight text-white flex items-center gap-1.5">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-1.5">
                 RELAY
-                <span className="text-[10px] uppercase font-bold bg-red-950 text-red-400 px-1.5 py-0.5 rounded border border-red-800/60">
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold bg-red-950 text-red-400 px-1.5 py-0.5 rounded border border-red-800/60">
                   Logistics OS
                 </span>
               </span>
@@ -61,71 +75,81 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Central Role Switcher Badges */}
-        <div className="hidden lg:flex items-center gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-[11px]">
+        {/* Central 1-Click Role Switcher (Desktop & Tablets) */}
+        <div className="hidden md:flex items-center gap-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 text-xs">
+          {roleOptions.map((opt) => {
+            const Icon = opt.icon;
+            const isActive = currentRole === opt.role;
+            const isAuthenticatedThisRole = currentUser?.role === opt.role;
+
+            return (
+              <button
+                key={opt.role}
+                type="button"
+                onClick={() => onRoleChange(opt.role)}
+                title={
+                  opt.role === 'guest'
+                    ? 'Go to Home'
+                    : isAuthenticatedThisRole
+                    ? `Switch to ${opt.label}`
+                    : `Login to ${opt.label} (Credentials Required)`
+                }
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-medium ${
+                  isActive
+                    ? 'bg-zinc-800 text-white font-bold shadow-xs ring-1 ring-zinc-700'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                }`}
+              >
+                <Icon size={13} className={isActive ? 'text-amber-400' : 'text-zinc-400'} />
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mobile Quick Role Selector Button */}
+        <div className="relative md:hidden">
           <button
             type="button"
-            onClick={() => onRoleChange('guest')}
-            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-              currentRole === 'guest'
-                ? 'bg-red-600 text-white font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+            onClick={() => setShowMobileRoleMenu(!showMobileRoleMenu)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-200"
           >
-            <span>Home</span>
+            <span className="text-[10px] text-zinc-400 font-normal">Role:</span>
+            <span className="text-amber-400 capitalize">{currentRole}</span>
+            <ChevronDown size={12} className="text-zinc-400" />
           </button>
 
-          <button
-            type="button"
-            onClick={() => onRoleChange('customer')}
-            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-              currentRole === 'customer'
-                ? 'bg-red-600 text-white font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <span>Customer</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onRoleChange('merchant')}
-            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-              currentRole === 'merchant'
-                ? 'bg-zinc-800 text-white font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <span>Merchant</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onRoleChange('agent')}
-            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-              currentRole === 'agent'
-                ? 'bg-green-600 text-white font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <span>Courier</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onRoleChange('admin')}
-            className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-              currentRole === 'admin'
-                ? 'bg-red-600 text-white font-bold shadow-xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <span>Admin HQ</span>
-          </button>
+          {showMobileRoleMenu && (
+            <div className="absolute left-0 mt-2 w-44 bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden z-50 animate-in fade-in py-1">
+              {roleOptions.map((opt) => {
+                const Icon = opt.icon;
+                const isActive = currentRole === opt.role;
+                return (
+                  <button
+                    key={opt.role}
+                    type="button"
+                    onClick={() => {
+                      onRoleChange(opt.role);
+                      setShowMobileRoleMenu(false);
+                    }}
+                    className={`w-full px-3 py-2 text-xs flex items-center justify-between transition-colors ${
+                      isActive ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon size={14} className={isActive ? 'text-amber-400' : 'text-zinc-400'} />
+                      <span>{opt.label}</span>
+                    </div>
+                    {isActive && <Check size={12} className="text-amber-400" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right Controls: Dark/Light Mode, Notifications, Auth */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Dark / Light Mode Toggle */}
           <button
             type="button"
@@ -133,7 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-colors"
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
-            {theme === 'dark' ? <Sun size={16} className="text-red-400" /> : <Moon size={16} />}
+            {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} />}
           </button>
 
           {/* Notifications Center */}
@@ -144,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="relative p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-colors"
               title="Notifications"
             >
-              <Bell size={16} />
+              <Bell size={15} />
               {notifications.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {notifications.length}
@@ -171,27 +195,33 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="p-3 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-zinc-900 dark:text-zinc-100">{n.title}</span>
-                        <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-1.5 py-0.5 rounded font-bold">
-                          {n.trackingNumber}
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-zinc-500">
+                      No notifications yet. Status changes will appear here live.
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div key={n.id} className="p-3 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-zinc-900 dark:text-zinc-100">{n.title}</span>
+                          <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-1.5 py-0.5 rounded font-bold font-mono">
+                            {n.trackingNumber}
+                          </span>
+                        </div>
+                        <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-snug">{n.message}</p>
+                        <span className="text-[10px] text-zinc-400 block">
+                          Channel: {n.channel}
                         </span>
                       </div>
-                      <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-snug">{n.message}</p>
-                      <span className="text-[10px] text-zinc-400 block">
-                        Channel: {n.channel}
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Authenticated User Menu (shown when in an active role) */}
-          {currentRole !== 'guest' && (
+          {/* Authenticated User Menu vs Sign In Button */}
+          {currentUser && currentRole !== 'guest' ? (
             <div className="relative">
               <button
                 type="button"
@@ -300,6 +330,16 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenAuth('login', 'customer')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-98"
+              title="Sign In with Credentials"
+            >
+              <LogIn size={13} />
+              <span className="hidden sm:inline">Sign In</span>
+            </button>
           )}
         </div>
       </div>

@@ -29,6 +29,8 @@ import {
   Building2,
   DollarSign,
   TrendingUp,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface CustomerPortalProps {
@@ -62,6 +64,14 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [labelOrder, setLabelOrder] = useState<Order | null>(null);
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopiedOrderId(orderId);
+    setTimeout(() => setCopiedOrderId(null), 2000);
+  };
 
   // Filter orders for this merchant
   const customerOrders = orders;
@@ -272,14 +282,29 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                       className="hover:bg-stone-50/80 dark:hover:bg-zinc-800/50 transition-colors"
                     >
                       <td className="py-3.5 px-4 font-mono font-bold text-zinc-900 dark:text-white">
-                        <button
-                          type="button"
-                          onClick={() => onSelectOrderToTrack(ord)}
-                          className="hover:text-amber-500 flex items-center gap-1.5 text-left"
-                        >
-                          <Package size={14} className="text-amber-500" />
-                          <span>{ord.trackingNumber}</span>
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onSelectOrderToTrack(ord)}
+                            className="hover:text-amber-500 flex items-center gap-1.5 text-left group"
+                            title="Click to view live tracking"
+                          >
+                            <Package size={14} className="text-amber-500 group-hover:scale-110 transition-transform" />
+                            <span>{ord.trackingNumber}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => copyToClipboard(ord.trackingNumber, ord.id, e)}
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded hover:bg-stone-200 dark:hover:bg-zinc-800 transition-colors"
+                            title="Copy Tracking ID"
+                          >
+                            {copiedOrderId === ord.id ? (
+                              <Check size={12} className="text-emerald-500" />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                          </button>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 text-zinc-700 dark:text-zinc-300">
                         <div className="font-semibold">{ord.itemDescription}</div>
