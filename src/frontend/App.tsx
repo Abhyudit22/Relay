@@ -41,8 +41,8 @@ import { DeliveryBackgroundAnimation } from './components/common/DeliveryBackgro
 import { X, Package } from 'lucide-react';
 
 const AppInner: React.FC = () => {
-  // Global State
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  // Global State - Fresh dataset by default (empty orders and notifications)
+  const [orders, setOrders] = useState<Order[]>([]);
   const [agents, setAgents] = useState<Agent[]>(INITIAL_AGENTS);
   const [zones, setZones] = useState<Zone[]>(INITIAL_ZONES);
   const [zoneAreas, setZoneAreas] = useState<ZoneArea[]>(INITIAL_ZONE_AREAS);
@@ -50,7 +50,17 @@ const AppInner: React.FC = () => {
   const [codConfigs, setCodConfigs] = useState<CodSurchargeConfig[]>(
     INITIAL_COD_SURCHARGE_CONFIGS
   );
-  const [notifications, setNotifications] = useState<NotificationLog[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<NotificationLog[]>([]);
+
+  const handleLoadDemoData = () => {
+    setOrders(INITIAL_ORDERS);
+    setNotifications(INITIAL_NOTIFICATIONS);
+    addToast({
+      type: 'success',
+      title: 'Demo Dataset Loaded',
+      message: 'Sample test orders and notification logs have been loaded successfully.',
+    });
+  };
 
   // Active Role & Persona (Starts as Guest with no active session until authenticated)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
