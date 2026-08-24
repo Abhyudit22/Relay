@@ -1,0 +1,6 @@
+{
+  "name": "Relay",
+  "description": "Streamlined last-mile logistics and consignment tracking platform with live rates, intelligent dispatch, OTP verification, and instant rescheduling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
