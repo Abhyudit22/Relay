@@ -289,6 +289,51 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     )}
 
+                    <div className="pt-1 border-t border-zinc-100 dark:border-zinc-800 my-1">
+                      <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 font-mono">
+                        Active Terminals for Account:
+                      </div>
+                      {(['customer', 'merchant', 'agent', 'admin'] as UserRole[]).map((r) => {
+                        const userRoles = currentUser.roles || [currentUser.role];
+                        const enabled = userRoles.includes(r) || userRoles.includes('admin');
+                        const isCurrent = currentRole === r;
+                        return (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              onRoleChange(r);
+                            }}
+                            className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs flex items-center justify-between transition-colors font-medium ${
+                              isCurrent
+                                ? 'bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30'
+                                : 'text-zinc-300 hover:bg-zinc-800/60'
+                            }`}
+                          >
+                            <span className="capitalize">
+                              {r === 'customer'
+                                ? 'Recipient Portal'
+                                : r === 'merchant'
+                                ? 'Merchant Shipper'
+                                : r === 'agent'
+                                ? 'Courier App'
+                                : 'Admin HQ'}
+                            </span>
+                            {enabled ? (
+                              <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/40 px-1.5 py-0.2 rounded font-bold">
+                                Enabled
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-amber-400 font-semibold hover:underline">
+                                + Add Access
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => {

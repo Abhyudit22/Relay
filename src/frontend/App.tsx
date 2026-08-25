@@ -116,20 +116,29 @@ const AppInner: React.FC = () => {
     });
   };
 
-  // Safe Role Selector: Asks for credentials if not logged in as the requested role
+  // Safe Multi-Role Selector: Allows switching seamlessly if account has role enabled
   const handleRoleSelection = (targetRole: UserRole) => {
     if (targetRole === 'guest') {
       setCurrentRole('guest');
       return;
     }
 
-    // If user is already logged in as this exact role, navigate directly
-    if (currentUser && currentUser.role === targetRole) {
-      setCurrentRole(targetRole);
-      return;
+    // If user is logged in and account has targetRole enabled:
+    if (currentUser) {
+      const userRoles = currentUser.roles || [currentUser.role];
+      if (userRoles.includes(targetRole) || userRoles.includes('admin')) {
+        setCurrentUser((prev) => (prev ? { ...prev, role: targetRole } : null));
+        setCurrentRole(targetRole);
+        addToast({
+          type: 'info',
+          title: `Operating as ${targetRole.toUpperCase()}`,
+          message: `Switched view for ${currentUser.name}. Active terminal: ${targetRole.toUpperCase()}.`,
+        });
+        return;
+      }
     }
 
-    // Prompt for credentials for the requested role
+    // Otherwise prompt for auth modal to log in or enable role for account
     handleOpenAuth('login', targetRole);
   };
 

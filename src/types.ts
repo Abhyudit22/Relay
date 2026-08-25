@@ -172,6 +172,7 @@ export interface ActiveUser {
   name: string;
   email: string;
   role: UserRole;
+  roles?: UserRole[];
   phone?: string;
   companyName?: string;
   businessType?: 'B2B' | 'B2C' | 'INDIVIDUAL';

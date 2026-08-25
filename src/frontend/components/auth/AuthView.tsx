@@ -3,6 +3,7 @@ import { UserRole, ActiveUser, Zone, Agent } from '../../../types';
 import {
   Truck,
   Shield,
+  ShieldCheck,
   User,
   Mail,
   Lock,
@@ -38,6 +39,7 @@ interface RegisteredAccount {
   phone: string;
   password: string;
   role: 'customer' | 'merchant' | 'agent' | 'admin';
+  roles: ('customer' | 'merchant' | 'agent' | 'admin')[];
   userObj: ActiveUser;
 }
 
@@ -47,11 +49,13 @@ const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
     phone: '+91 98450 44332',
     password: 'recipient@123',
     role: 'customer',
+    roles: ['customer', 'merchant', 'agent', 'admin'],
     userObj: {
       id: 'usr-customer-demo',
       name: 'Rohan Mehta',
       email: 'rohan.mehta@example.in',
       role: 'customer',
+      roles: ['customer', 'merchant', 'agent', 'admin'],
       phone: '+91 98450 44332',
       address: '402 Sunrise Heights, Sector 15, Dwarka, New Delhi',
       pincode: '110075',
@@ -64,11 +68,13 @@ const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
     phone: '+91 98450 11223',
     password: 'merchant@123',
     role: 'merchant',
+    roles: ['merchant', 'customer', 'agent', 'admin'],
     userObj: {
       id: 'usr-merchant-demo',
       name: 'Priya Sharma',
       email: 'priya.sharma@example.in',
       role: 'merchant',
+      roles: ['merchant', 'customer', 'agent', 'admin'],
       phone: '+91 98450 11223',
       companyName: 'Sharma Enterprises & Retail',
       businessType: 'B2B',
@@ -83,11 +89,13 @@ const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
     phone: '+91 98110 55443',
     password: 'courier@123',
     role: 'agent',
+    roles: ['agent', 'customer', 'merchant', 'admin'],
     userObj: {
       id: 'agt-042',
       name: 'Rahul Sharma',
       email: 'rahul.s@lastmile-fleet.internal',
       role: 'agent',
+      roles: ['agent', 'customer', 'merchant', 'admin'],
       phone: '+91 98110 55443',
       agentId: 'agt-042',
       vehicleType: 'ELECTRIC_SCOOTER',
@@ -101,11 +109,13 @@ const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
     phone: '+91 98100 99887',
     password: 'admin@123',
     role: 'admin',
+    roles: ['admin', 'merchant', 'agent', 'customer'],
     userObj: {
       id: 'admin-master',
       name: 'Vikramaditya Singh',
       email: 'vikram.singh@lastmile.in',
       role: 'admin',
+      roles: ['admin', 'merchant', 'agent', 'customer'],
       phone: '+91 98100 99887',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
       joinedDate: '2023-11-20',
@@ -118,7 +128,17 @@ function getRegisteredAccounts(): RegisteredAccount[] {
     const raw = localStorage.getItem('relay_registered_accounts');
     if (!raw) return DEFAULT_ACCOUNTS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ACCOUNTS;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((a: any) => ({
+        ...a,
+        roles: Array.isArray(a.roles) && a.roles.length > 0 ? a.roles : [a.role],
+        userObj: {
+          ...a.userObj,
+          roles: Array.isArray(a.userObj?.roles) && a.userObj.roles.length > 0 ? a.userObj.roles : (a.roles || [a.role]),
+        },
+      }));
+    }
+    return DEFAULT_ACCOUNTS;
   } catch {
     return DEFAULT_ACCOUNTS;
   }
@@ -180,17 +200,50 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
   // Admin Specific Fields
   const [adminPasskey, setAdminPasskey] = useState('ADMIN-9900');
+  const [upgradeAdminPasskey, setUpgradeAdminPasskey] = useState('');
   const [department, setDepartment] = useState('Central Dispatch HQ');
 
   // Interactive UI States
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [roleEnablePrompt, setRoleEnablePrompt] = useState<{
+    account: RegisteredAccount;
+    targetRole: 'customer' | 'merchant' | 'agent' | 'admin';
+  } | null>(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
   const [useOtpLogin, setUseOtpLogin] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+
+  const handleEnableRoleForAccount = (
+    account: RegisteredAccount,
+    targetRole: 'customer' | 'merchant' | 'agent' | 'admin'
+  ) => {
+    if (targetRole === 'admin') {
+      if (upgradeAdminPasskey.trim() !== 'ADMIN-9900') {
+        setErrorMessage('Company Admin Verification Failed. Please enter the valid Company Admin Security Key (e.g., ADMIN-9900).');
+        return;
+      }
+    }
+    const currentRoles = account.roles || [account.role];
+    const updatedRoles = Array.from(new Set([...currentRoles, targetRole]));
+    const updatedUserObj: ActiveUser = {
+      ...account.userObj,
+      role: targetRole,
+      roles: updatedRoles,
+    };
+    const updatedAccount: RegisteredAccount = {
+      ...account,
+      roles: updatedRoles,
+      userObj: updatedUserObj,
+    };
+    saveRegisteredAccount(updatedAccount);
+    setRoleEnablePrompt(null);
+    setUpgradeAdminPasskey('');
+    onAuthSuccess(updatedUserObj, targetRole);
+  };
 
   // Role metadata lookup for custom tailored headings & badges
   const roleConfig = {
@@ -339,10 +392,19 @@ export const AuthView: React.FC<AuthViewProps> = ({
       );
 
       if (existing) {
-        setErrorMessage(
-          `An account with this email or phone already exists as a ${existing.role.toUpperCase()} account. Please sign in instead.`
-        );
-        return;
+        const existingRoles = existing.roles || [existing.role];
+        if (!existingRoles.includes(selectedRole)) {
+          setRoleEnablePrompt({
+            account: existing,
+            targetRole: selectedRole,
+          });
+          return;
+        } else {
+          setErrorMessage(
+            `An account with this email/phone already has ${selectedRole.toUpperCase()} access. Please sign in.`
+          );
+          return;
+        }
       }
     }
 
@@ -366,15 +428,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
         if (!found) {
           setErrorMessage(
-            `No registered account found for "${cleanEmail || cleanPhone}". Please click "Sign Up" above to create a new ${selectedRole.toUpperCase()} account.`
-          );
-          return;
-        }
-
-        // Enforce strict role matching!
-        if (found.role !== selectedRole) {
-          setErrorMessage(
-            `Access Denied: Account "${found.email}" is registered as a ${found.role.toUpperCase()} account. You cannot log into the ${selectedRole.toUpperCase()} portal with a ${found.role.toUpperCase()} account.`
+            `No registered account found for "${cleanEmail || cleanPhone}". Please click "Sign Up" above to create an account with ${selectedRole.toUpperCase()} access.`
           );
           return;
         }
@@ -385,7 +439,24 @@ export const AuthView: React.FC<AuthViewProps> = ({
           return;
         }
 
-        onAuthSuccess(found.userObj, found.role);
+        const userRoles = found.roles || [found.role];
+
+        // Check if selectedRole is enabled for this account
+        if (!userRoles.includes(selectedRole)) {
+          setRoleEnablePrompt({
+            account: found,
+            targetRole: selectedRole,
+          });
+          return;
+        }
+
+        const activeUserObj: ActiveUser = {
+          ...found.userObj,
+          role: selectedRole,
+          roles: userRoles,
+        };
+
+        onAuthSuccess(activeUserObj, selectedRole);
       } else {
         // Sign Up Mode: Save new account to registry under selectedRole
         const generatedId = `usr-${Date.now().toString(36)}`;
@@ -396,6 +467,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
           name: resolvedName,
           email: cleanEmail || `${cleanPhone}@sms.relay.in`,
           role: selectedRole,
+          roles: [selectedRole],
           phone: cleanPhone || '+91 98450 12345',
           companyName: selectedRole === 'merchant' || customerType === 'B2B' ? companyName || 'Custom Business Shipper' : undefined,
           businessType: customerType,
@@ -420,6 +492,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
           phone: cleanPhone,
           password: password,
           role: selectedRole,
+          roles: [selectedRole],
           userObj: newUserObj,
         };
 
@@ -698,6 +771,55 @@ export const AuthView: React.FC<AuthViewProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* Role Capability Upgrade Banner */}
+            {roleEnablePrompt && (
+              <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-950 dark:text-amber-200 flex flex-col gap-3 animate-in fade-in">
+                <div className="flex items-start gap-2.5">
+                  <ShieldCheck className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={18} />
+                  <div>
+                    <p className="font-bold text-amber-900 dark:text-amber-300 text-sm">
+                      Enable {roleEnablePrompt.targetRole.toUpperCase()} Access for this Account?
+                    </p>
+                    <p className="mt-1 text-zinc-700 dark:text-amber-200/90 text-[11px] leading-relaxed">
+                      Account <span className="font-bold text-zinc-950 dark:text-white">{roleEnablePrompt.account.email}</span> is currently registered with access to:{' '}
+                      <span className="font-bold uppercase text-amber-700 dark:text-amber-400">
+                        {(roleEnablePrompt.account.roles || [roleEnablePrompt.account.role]).join(', ')}
+                      </span>.
+                    </p>
+                  </div>
+                </div>
+
+                {roleEnablePrompt.targetRole === 'admin' && (
+                  <div className="p-2.5 bg-amber-500/20 border border-amber-500/40 rounded-xl space-y-1">
+                    <label className="block text-[11px] font-bold text-amber-950 dark:text-amber-200">
+                      Company Admin Verification Passkey (Required)
+                    </label>
+                    <input
+                      type="password"
+                      value={upgradeAdminPasskey}
+                      onChange={(e) => setUpgradeAdminPasskey(e.target.value)}
+                      placeholder="Enter ADMIN-9900"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-zinc-900 border border-amber-500/40 rounded-lg text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100"
+                    />
+                    <p className="text-[10px] text-amber-800 dark:text-amber-300 font-medium">
+                      Admin HQ access requires verification from company management (Demo: ADMIN-9900).
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleEnableRoleForAccount(roleEnablePrompt.account, roleEnablePrompt.targetRole)
+                  }
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Upgrade Account to include {roleEnablePrompt.targetRole.toUpperCase()} Capability & Enter</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            )}
 
             {/* Error Banner */}
             {errorMessage && (
