@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Order,
   OrderStatus,
@@ -51,6 +51,20 @@ const AppInner: React.FC = () => {
     INITIAL_COD_SURCHARGE_CONFIGS
   );
   const [notifications, setNotifications] = useState<NotificationLog[]>([]);
+
+  // Fetch orders from backend on mount (syncs with Neon Postgres if configured)
+  useEffect(() => {
+    fetch('/api/orders')
+      ? fetch('/api/orders')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+              setOrders(data.orders);
+            }
+          })
+          .catch((err) => console.log('Could not fetch orders from backend:', err))
+      : null;
+  }, []);
 
   const handleLoadDemoData = () => {
     setOrders(INITIAL_ORDERS);

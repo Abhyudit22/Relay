@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { calculateOrderCharges } from './services/rateEngine';
 import { ALLOWED_TRANSITIONS, isValidTransition } from './services/orderService';
 import { notifyOrderStatusChange } from './services/notificationService';
+import { initDatabaseSchema, isDbConnected, getAllOrdersDb, saveOrderDb } from './db';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,13 +16,35 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Initialize Neon DB schema if DATABASE_URL is set
+  await initDatabaseSchema();
+
   // Backend API Routes
   app.get('/api/health', (req, res) => {
     res.json({
       status: 'ok',
       service: 'Relay Logistics OS Backend Service',
+      database: isDbConnected() ? 'Neon PostgreSQL Connected' : 'In-Memory Mode (Set DATABASE_URL to connect Neon)',
       timestamp: new Date().toISOString(),
     });
+  });
+
+  app.get('/api/orders', async (req, res) => {
+    try {
+      const orders = await getAllOrdersDb();
+      res.json({ orders: orders || [] });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to fetch orders' });
+    }
+  });
+
+  app.post('/api/orders', async (req, res) => {
+    try {
+      const savedOrder = await saveOrderDb(req.body);
+      res.json({ order: savedOrder || req.body });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to save order' });
+    }
   });
 
   app.post('/api/rates/calculate', (req, res) => {

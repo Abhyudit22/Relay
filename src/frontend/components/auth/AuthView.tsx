@@ -33,6 +33,112 @@ interface AuthViewProps {
   isModal?: boolean;
 }
 
+interface RegisteredAccount {
+  email: string;
+  phone: string;
+  password: string;
+  role: 'customer' | 'merchant' | 'agent' | 'admin';
+  userObj: ActiveUser;
+}
+
+const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
+  {
+    email: 'rohan.mehta@example.in',
+    phone: '+91 98450 44332',
+    password: 'recipient@123',
+    role: 'customer',
+    userObj: {
+      id: 'usr-customer-demo',
+      name: 'Rohan Mehta',
+      email: 'rohan.mehta@example.in',
+      role: 'customer',
+      phone: '+91 98450 44332',
+      address: '402 Sunrise Heights, Sector 15, Dwarka, New Delhi',
+      pincode: '110075',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+      joinedDate: '2024-01-15',
+    },
+  },
+  {
+    email: 'priya.sharma@example.in',
+    phone: '+91 98450 11223',
+    password: 'merchant@123',
+    role: 'merchant',
+    userObj: {
+      id: 'usr-merchant-demo',
+      name: 'Priya Sharma',
+      email: 'priya.sharma@example.in',
+      role: 'merchant',
+      phone: '+91 98450 11223',
+      companyName: 'Sharma Enterprises & Retail',
+      businessType: 'B2B',
+      address: '101 Commercial Logistics Gateway, Indiranagar, Bengaluru',
+      pincode: '560038',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+      joinedDate: '2024-02-01',
+    },
+  },
+  {
+    email: 'rahul.s@lastmile-fleet.internal',
+    phone: '+91 98110 55443',
+    password: 'courier@123',
+    role: 'agent',
+    userObj: {
+      id: 'agt-042',
+      name: 'Rahul Sharma',
+      email: 'rahul.s@lastmile-fleet.internal',
+      role: 'agent',
+      phone: '+91 98110 55443',
+      agentId: 'agt-042',
+      vehicleType: 'ELECTRIC_SCOOTER',
+      zoneId: 'zone-north',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      joinedDate: '2024-03-10',
+    },
+  },
+  {
+    email: 'vikram.singh@lastmile.in',
+    phone: '+91 98100 99887',
+    password: 'admin@123',
+    role: 'admin',
+    userObj: {
+      id: 'admin-master',
+      name: 'Vikramaditya Singh',
+      email: 'vikram.singh@lastmile.in',
+      role: 'admin',
+      phone: '+91 98100 99887',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      joinedDate: '2023-11-20',
+    },
+  },
+];
+
+function getRegisteredAccounts(): RegisteredAccount[] {
+  try {
+    const raw = localStorage.getItem('relay_registered_accounts');
+    if (!raw) return DEFAULT_ACCOUNTS;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ACCOUNTS;
+  } catch {
+    return DEFAULT_ACCOUNTS;
+  }
+}
+
+function saveRegisteredAccount(acc: RegisteredAccount) {
+  const current = getRegisteredAccounts();
+  const updated = current.filter(
+    (a) =>
+      a.email.toLowerCase() !== acc.email.toLowerCase() &&
+      (!acc.phone || a.phone !== acc.phone)
+  );
+  updated.push(acc);
+  try {
+    localStorage.setItem('relay_registered_accounts', JSON.stringify(updated));
+  } catch (e) {
+    console.error('Failed to store account to localStorage:', e);
+  }
+}
+
 export const AuthView: React.FC<AuthViewProps> = ({
   initialMode = 'login',
   initialRole = 'customer',
@@ -191,8 +297,11 @@ export const AuthView: React.FC<AuthViewProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim();
+
     // Basic Validations
-    if (!email && !phone) {
+    if (!cleanEmail && !cleanPhone) {
       setErrorMessage('Please enter your email address or mobile number.');
       return;
     }
@@ -220,6 +329,21 @@ export const AuthView: React.FC<AuthViewProps> = ({
         setErrorMessage('Please accept the Terms of Service to create an account.');
         return;
       }
+
+      // Check if email or phone already registered
+      const allAccounts = getRegisteredAccounts();
+      const existing = allAccounts.find(
+        (a) =>
+          (cleanEmail && a.email.toLowerCase() === cleanEmail) ||
+          (cleanPhone && a.phone === cleanPhone)
+      );
+
+      if (existing) {
+        setErrorMessage(
+          `An account with this email or phone already exists as a ${existing.role.toUpperCase()} account. Please sign in instead.`
+        );
+        return;
+      }
     }
 
     if (selectedRole === 'admin' && adminPasskey !== 'ADMIN-9900') {
@@ -231,32 +355,77 @@ export const AuthView: React.FC<AuthViewProps> = ({
 
     setTimeout(() => {
       setIsLoading(false);
-      const generatedId = `usr-${Date.now().toString(36)}`;
-      const resolvedName = fullName.trim() || (email ? email.split('@')[0] : 'Logistics User');
 
-      const authenticatedUser: ActiveUser = {
-        id: generatedId,
-        name: resolvedName,
-        email: email || `${phone}@sms.relay.in`,
-        role: selectedRole,
-        phone: phone || '+91 98450 12345',
-        companyName: customerType === 'B2B' ? companyName || 'Custom Business Shipper' : undefined,
-        businessType: customerType,
-        address: defaultPickupAddress || '101 Commercial Logistics Gateway, Indiranagar',
-        pincode: defaultPincode || '560038',
-        agentId: selectedRole === 'agent' ? generatedId : undefined,
-        vehicleType: selectedRole === 'agent' ? vehicleType : undefined,
-        zoneId: selectedRole === 'agent' ? preferredZoneId : undefined,
-        avatar:
-          selectedRole === 'agent'
-            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-            : selectedRole === 'admin'
-            ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-        joinedDate: new Date().toISOString().split('T')[0],
-      };
+      if (mode === 'login') {
+        const allAccounts = getRegisteredAccounts();
+        const found = allAccounts.find(
+          (a) =>
+            (cleanEmail && a.email.toLowerCase() === cleanEmail) ||
+            (cleanPhone && a.phone === cleanPhone)
+        );
 
-      onAuthSuccess(authenticatedUser, selectedRole);
+        if (!found) {
+          setErrorMessage(
+            `No registered account found for "${cleanEmail || cleanPhone}". Please click "Sign Up" above to create a new ${selectedRole.toUpperCase()} account.`
+          );
+          return;
+        }
+
+        // Enforce strict role matching!
+        if (found.role !== selectedRole) {
+          setErrorMessage(
+            `Access Denied: Account "${found.email}" is registered as a ${found.role.toUpperCase()} account. You cannot log into the ${selectedRole.toUpperCase()} portal with a ${found.role.toUpperCase()} account.`
+          );
+          return;
+        }
+
+        // Verify password
+        if (!useOtpLogin && found.password && found.password !== password) {
+          setErrorMessage('Incorrect password. Please verify your credentials.');
+          return;
+        }
+
+        onAuthSuccess(found.userObj, found.role);
+      } else {
+        // Sign Up Mode: Save new account to registry under selectedRole
+        const generatedId = `usr-${Date.now().toString(36)}`;
+        const resolvedName = fullName.trim() || (cleanEmail ? cleanEmail.split('@')[0] : 'Logistics User');
+
+        const newUserObj: ActiveUser = {
+          id: generatedId,
+          name: resolvedName,
+          email: cleanEmail || `${cleanPhone}@sms.relay.in`,
+          role: selectedRole,
+          phone: cleanPhone || '+91 98450 12345',
+          companyName: selectedRole === 'merchant' || customerType === 'B2B' ? companyName || 'Custom Business Shipper' : undefined,
+          businessType: customerType,
+          address: defaultPickupAddress || '101 Commercial Logistics Gateway, Indiranagar',
+          pincode: defaultPincode || '560038',
+          agentId: selectedRole === 'agent' ? generatedId : undefined,
+          vehicleType: selectedRole === 'agent' ? vehicleType : undefined,
+          zoneId: selectedRole === 'agent' ? preferredZoneId : undefined,
+          avatar:
+            selectedRole === 'agent'
+              ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+              : selectedRole === 'admin'
+              ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+              : selectedRole === 'merchant'
+              ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
+              : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+          joinedDate: new Date().toISOString().split('T')[0],
+        };
+
+        const newAccount: RegisteredAccount = {
+          email: cleanEmail || `${cleanPhone}@sms.relay.in`,
+          phone: cleanPhone,
+          password: password,
+          role: selectedRole,
+          userObj: newUserObj,
+        };
+
+        saveRegisteredAccount(newAccount);
+        onAuthSuccess(newUserObj, selectedRole);
+      }
     }, 500);
   };
 
